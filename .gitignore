@@ -1,0 +1,21 @@
+# Large data files — regenerated automatically by main.py
+data/
+
+# Output logs
+output/logs/
+
+# Python environment
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# PyCharm
+.idea/
+*.iml
+
+# Mac
+.DS_Store
+
+# API key — never commit this
+src/config.py

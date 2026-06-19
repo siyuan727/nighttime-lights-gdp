@@ -1,0 +1,3 @@
+model,RMSE,MAE,R2_test
+NTL Nowcast (Ridge),0.0691,0.0508,0.1746
+Naive (zero growth),0.0772,0.0532,0.0
