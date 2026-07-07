@@ -3,8 +3,7 @@
 Satellite imagery of the Earth at night is one of the stranger data sources
 in economics. The idea that you can look at how bright a place is from space
 and learn something meaningful about how rich it is sounds almost too simple
-— but it works, and understanding *why* it works (and where it breaks down)
-is what this project is about.
+but it works, and understanding why it works is what this project is about.
 
 ## Research Questions
 
@@ -12,7 +11,7 @@ is what this project is about.
    county level, and does the relationship hold after removing time-invariant
    county characteristics with fixed effects?
 2. Can changes in nighttime light predict GDP growth *before* official BEA
-   statistics are released — i.e., does NTL have nowcasting value?
+   statistics are released i.e., does NTL have nowcasting value?
 3. Does the NTL-GDP relationship differ between urban and rural counties,
    and what does that tell us about what satellite light is actually measuring?
 
