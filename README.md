@@ -105,18 +105,31 @@ richer economies and applying it to a poorer one.
 
 ## Figures
 
-- `output/figures/us_lights_and_gdp.png`: the real VIIRS lights raster next to
-  real county GDP, contiguous U.S.
-- `output/figures/coefficient_comparison.png`: the elasticity across
-  specifications, showing the OLS-to-fixed-effects collapse.
-- `output/figures/ntl_gdp_scatter.png`: levels versus growth correlations.
-- `output/figures/urban_rural_ntl.png`: lights distribution and indexed trend by
-  county type.
-- `output/figures/nowcast_comparison.png`: the nowcast against actual growth.
-- `output/figures/ghana_lights_and_gdp.png` and
-  `output/figures/country_gdp_estimate_real.png`: the Ghana lights image and the
-  reconstruction against actual GDP.
+Nighttime lights and real county GDP, contiguous U.S.:
 
+![US lights and GDP](images/us_lights_and_gdp.png)
+
+Elasticity across specifications, showing the collapse from OLS to fixed effects:
+
+![Elasticity across specifications](images/coefficient_comparison.png)
+
+Levels versus growth correlations:
+
+![NTL vs GDP, levels and growth](images/ntl_gdp_scatter.png)
+
+Nighttime lights distribution and indexed trend by county type:
+
+![Urban vs rural NTL](images/urban_rural_ntl.png)
+
+The nowcast against actual growth:
+
+![Nowcast vs actual](images/nowcast_comparison.png)
+
+Ghana nighttime lights and the reconstruction against actual GDP:
+
+![Ghana lights and GDP](images/ghana_lights_and_gdp.png)
+
+![Ghana GDP estimate vs actual](images/country_gdp_estimate_real.png)
 ## Repository layout
 
 ```
