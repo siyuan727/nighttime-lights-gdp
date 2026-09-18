@@ -1,0 +1,4 @@
+year,national_gdp_actual_bil,national_gdp_estimated_bil,pct_error,is_covid_year
+2018,19433.25,18681.55,-3.87,False
+2019,19942.99,18689.82,-6.28,False
+2020,19539.98,18696.53,-4.32,True

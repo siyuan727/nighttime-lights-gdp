@@ -1,20 +1,34 @@
 import numpy as np
 import pandas as pd
 import logging
-from src.config import DATA_RAW, VIIRS_DIR, USE_SYNTHETIC, YEARS, START_YEAR
+from src.config import DATA_RAW, VIIRS_DIR, USE_SYNTHETIC, YEARS, START_YEAR, NTL_SOURCE
 
 log = logging.getLogger(__name__)
 
 
 def get_ntl_data(gdp_df):
     cache = DATA_RAW / "ntl_county.csv"
-    if cache.exists():
-        log.info("Loading cached NTL data...")
-        return pd.read_csv(cache, dtype={"fips": str})
-    df = _synthetic_ntl(gdp_df) if USE_SYNTHETIC else _real_viirs()
-    df.to_csv(cache, index=False)
-    return df
 
+    if USE_SYNTHETIC:
+        raise RuntimeError(
+            "USE_SYNTHETIC is True. This project is real-data only. "
+            "Set USE_SYNTHETIC = False in src/config.py."
+        )
+
+    if cache.exists():
+        cached = pd.read_csv(cache, dtype={"fips": str})
+        n = cached["fips"].nunique()
+        mx = cached["ntl_mean"].max()
+        if n < 3080 or mx > 300:
+            raise RuntimeError(
+                f"Cached NTL looks synthetic (counties={n}, max={mx:.1f}). "
+                f"Delete {cache} and rerun to pull real Black Marble data."
+            )
+        log.info("Loading cached NTL data (real).")
+        return cached
+
+    from src.ntl_counties_bm import get_county_ntl
+    return get_county_ntl()
 
 def _synthetic_ntl(gdp_df):
 

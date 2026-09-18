@@ -177,7 +177,7 @@ def plot_nowcast(nowcast_results):
 def plot_urban_rural_ntl(panel):
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
     colors_map = {1: NAVY, 0: FOREST}
-    labels_map  = {1: "Urban (pop > 100k)", 0: "Rural (pop ≤ 100k)"}
+    labels_map = {1: "Urban (pop > 100k)", 0: "Rural (pop <= 100k)"}
 
     for val in [1, 0]:
         sub = panel[panel["urban"] == val]
@@ -189,21 +189,26 @@ def plot_urban_rural_ntl(panel):
     axes[0].set_title("NTL Distribution by County Type", fontsize=12)
     axes[0].legend()
 
-    yearly = (panel.groupby(["year","urban"])
-              [["ntl_mean","gdp_thousands"]].mean().reset_index())
+    yearly = (panel.groupby(["year", "urban"])["ntl_mean"]
+              .mean().reset_index())
+    base_year = yearly["year"].min()
+
     for val in [1, 0]:
-        sub = yearly[yearly["urban"] == val]
-        axes[1].plot(sub["year"], sub["ntl_mean"],
+        sub = yearly[yearly["urban"] == val].sort_values("year")
+        base = sub.loc[sub["year"] == base_year, "ntl_mean"].iloc[0]
+        idx = sub["ntl_mean"] / base * 100
+        axes[1].plot(sub["year"], idx,
                      color=colors_map[val], linewidth=2,
                      marker="o", label=labels_map[val])
 
+    axes[1].axhline(100, color=GREY, linestyle=":", linewidth=1)
     axes[1].set_xlabel("Year", fontsize=11)
-    axes[1].set_ylabel("Mean NTL Radiance", fontsize=11)
-    axes[1].set_title("NTL Trend by County Type", fontsize=12)
+    axes[1].set_ylabel(f"Mean NTL radiance (index, {base_year} = 100)",
+                       fontsize=11)
+    axes[1].set_title("NTL Trend by County Type (indexed)", fontsize=12)
     axes[1].legend()
     plt.tight_layout()
     _save("urban_rural_ntl.png")
-
 
 def plot_county_map(county_panel, county_gdf):
     try:

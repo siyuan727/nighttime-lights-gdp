@@ -1,5 +1,5 @@
 model,variable,coef,se,pval,r2,nobs
-fe_entity,ln_ntl,0.6154,0.0289,0.0,0.2218,30800
-fe_twoway,ln_ntl,0.5793,0.0304,0.0,0.2081,30800
-fe_twoway_pop,ln_ntl,0.5794,0.0304,0.0,0.2081,30800
-fe_twoway_pop,ln_pop,0.0065,0.0139,0.6413,0.2081,30800
+fe_entity,ln_ntl,0.1945,0.0111,0.0,0.0867,21343
+fe_twoway,ln_ntl,0.1621,0.0176,0.0,0.0408,21343
+fe_twoway_pop,ln_ntl,0.162,0.0176,0.0,0.0408,21343
+fe_twoway_pop,ln_pop,-0.0071,0.0237,0.7637,0.0408,21343

@@ -44,8 +44,8 @@ def fetch_bea_gdp():
         log.info("Loading cached BEA GDP...")
         return pd.read_csv(cache, dtype={"fips": str})
     if BEA_API_KEY == "YOUR_BEA_API_KEY_HERE":
-        log.warning("No BEA key — using synthetic GDP.")
-        return _synthetic_gdp()
+        raise RuntimeError("No BEA key set. Put your real BEA key in "
+                           "src/config.py; this project is real-data only.")
     log.info("Fetching BEA county GDP...")
     params = {
         "UserID": BEA_API_KEY, "method": "GetData",
@@ -59,8 +59,7 @@ def fetch_bea_gdp():
         r.raise_for_status()
         records = r.json()["BEAAPI"]["Results"]["Data"]
     except Exception as e:
-        log.error(f"BEA API failed: {e}. Using synthetic data.")
-        return _synthetic_gdp()
+        raise RuntimeError(f"BEA API failed: {e}") from e
 
     rows = []
     for rec in records:

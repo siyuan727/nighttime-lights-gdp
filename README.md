@@ -1,110 +1,191 @@
-# Nighttime Lights as a GDP Proxy: Panel Evidence from U.S. Counties
+# Nighttime Lights and Economic Output
 
-Nighttime satellite imagery has become a common proxy for economic output, especially in places where official accounts are unreliable or unavailable at a fine geographic scale. This project asks how far this proxy can be stretched in a setting where GDP is already accurately documented. U.S. counties have high-quality GDP figures that can serve as a benchmark, which makes them a good place to measure the light-to-output relationship carefully, separate real signal from confounding, and test whether light carries information early enough to be useful.
+This project measures how well satellite nighttime lights track real economic
+output, using two settings: U.S. counties, where high-quality GDP figures exist
+and can serve as ground truth, and Ghana, a country where the same method is
+used to reconstruct GDP from lights and check it against the World Bank series.
 
-## Research questions
+Everything here runs on real data. GDP comes from the U.S. Bureau of Economic
+Analysis and the World Bank, nighttime lights come from NASA's Black Marble
+VIIRS product, and county boundaries come from the Census Bureau. There is no
+simulated data in the results.
 
-1. How strongly does nighttime light intensity track county GDP, and does the relationship survive once time-invariant county characteristics are removed through fixed effects?
-2. Do changes in light predict GDP growth before the BEA releases official figures, that is, does light have nowcasting value?
-3. Does the light-GDP relationship differ between urban and rural counties, and what does that reveal about what the satellite is actually measuring?
+## The question
+
+Nighttime lights are widely used as a proxy for economic activity, especially
+where official statistics are weak or slow. The obvious version of that claim,
+that brighter places are richer, is easy to show and not very informative. The
+harder and more useful questions are whether the relationship survives once you
+account for the fixed differences between places, whether changes in light
+track changes in output, and how far a relationship estimated in data-rich
+settings can be pushed into data-poor ones. This project works through all
+three on real data.
 
 ## Data
 
-| Source                | Series                          | Coverage     |
-| --------------------- | ------------------------------- | ------------ |
-| BEA Regional Accounts | County real GDP (CAGDP1)        | 2013 to 2022 |
-| VIIRS VCMSLCFG        | Nighttime radiance (nW/cm2/sr)  | 2013 to 2022 |
-| Census TIGER          | County shapefiles               | 2022 vintage |
-| Census PEP            | County population estimates     | 2013 to 2019 |
+| Source | Series | Coverage |
+| --- | --- | --- |
+| BEA Regional Accounts | County real GDP (CAGDP1, chained dollars) | 2016 to 2022 |
+| Census Population Estimates | County population | 2016 to 2022 |
+| NASA Black Marble | VIIRS VNP46A4 annual radiance | 2016 to 2022 |
+| Census TIGER | County boundaries | 2022 vintage |
+| World Bank WDI | National GDP, constant 2015 USD | 2013 to 2022 |
 
-Annual VIIRS composites are published by the Earth Observation Group at the Colorado School of Mines (eogdata.mines.edu). This repository ships with a synthetic light generator calibrated to the empirical properties of the real series (levels correlation near 0.85, growth correlation near 0.35), so the pipeline runs end to end without downloading raster files. Set `USE_SYNTHETIC = False` in `src/config.py` to run on the real composites.
+Black Marble tiles are downloaded through the World Bank's blackmarblepy package
+and aggregated to county polygons. The final U.S. panel covers about 3,049
+contiguous counties after dropping a small number of counties with zero
+measured radiance or missing GDP.
 
 ## Method
 
-### Baseline and the omitted variable problem
+The core of the U.S. analysis is a comparison across specifications, from naive
+to credible.
 
-A pooled OLS regression of log GDP on log light gives a coefficient near 1.15. That estimate is not credible as a structural relationship. Wealthier counties are brighter partly because they hold more people, more infrastructure, and a longer history of development, and the regression attributes all of it to light. The coefficient absorbs everything correlated with both brightness and output.
+A pooled OLS regression of log GDP on log nighttime lights gives an elasticity
+of about 0.85. That figure is not believable as a structural relationship.
+Brighter counties are richer partly because they hold more people, more
+infrastructure, and more of everything that produces both light and output, and
+the regression hands all of it to light.
 
-### Two-way fixed effects
+A two-way fixed effects panel removes the confounding. County effects absorb
+the time-invariant characteristics of each place, and year effects absorb the
+national shocks common to every county. What remains is the within-county
+relationship between changes in light and changes in output, and the elasticity
+falls to about 0.16. That collapse from 0.85 to 0.16 is the central result.
 
-Two-way fixed effects strip the confounding out:
+The project also fits a spatial lag model at the state level to account for
+economic activity spilling across borders, splits the fixed-effects estimate by
+urban and rural counties, and tests whether a Ridge model using light growth
+can nowcast GDP growth before the BEA releases official figures.
+
+## What it finds
+
+The within-county elasticity of about 0.16 is somewhat below the 0.28 to 0.35
+range reported by Henderson, Storeygard and Weil (2012) for cross-country data.
+That is expected: county-year variation is noisier and more short-run than
+cross-country variation, so the within estimate is attenuated. The direction and
+order of magnitude line up with the literature, and the large gap between the
+OLS and fixed-effects estimates is the honest headline, most of the raw
+correlation is composition, not a genuine light-to-output response.
+
+The levels-versus-changes contrast makes the same point in the raw data. The
+correlation between log lights and log GDP across counties is about 0.84. The
+correlation between their year-to-year changes is about 0.13. The relationship
+that looks strong in levels is much weaker once you ask whether changes track
+changes, which is the harder and more relevant question.
+
+The nowcast is the weakest part of the project, and I report it as such. A Ridge
+model trained on pre-2019 data and tested on 2019 to 2022 reduces out-of-sample
+RMSE by only about 2 percent against a naive zero-growth benchmark, with a test
+R-squared near zero. Lights carry some signal about county GDP growth, but at
+the county-year level it is weak and does not meaningfully beat assuming no
+growth. The model also understates the 2020 contraction, because lights fell
+less than output during the pandemic.
+
+Real nighttime lights rise about 15 percent nationally from 2016 to 2022, with
+a clear dip in 2020, in both urban and rural counties. Rural lights grow faster
+in percentage terms, not because rural economies grew faster, but because rural
+counties start from a very low radiance base where a modest absolute increase is
+a large relative change.
+
+## The Ghana extension
+
+The country module estimates the light-to-GDP elasticity on a panel of
+data-rich countries with two-way fixed effects, then applies it to Ghana's
+nighttime lights anchored to one year of Ghana's actual World Bank GDP, and
+compares the reconstruction to the real series.
+
+Ghana is also the clearest illustration of the proxy's central weakness. Its
+total luminosity rose about 230 percent from 2013 to 2022 while its real GDP
+rose about 40 percent. Raw lights are a badly biased proxy for the level of
+growth; the elasticity correction is what makes them usable at all. The
+reconstruction tracks actual GDP closely near the anchor year and drifts from it
+further out, which is the external-validity cost of borrowing an elasticity from
+richer economies and applying it to a poorer one.
+
+## Figures
+
+- `output/figures/us_lights_and_gdp.png`: the real VIIRS lights raster next to
+  real county GDP, contiguous U.S.
+- `output/figures/coefficient_comparison.png`: the elasticity across
+  specifications, showing the OLS-to-fixed-effects collapse.
+- `output/figures/ntl_gdp_scatter.png`: levels versus growth correlations.
+- `output/figures/urban_rural_ntl.png`: lights distribution and indexed trend by
+  county type.
+- `output/figures/nowcast_comparison.png`: the nowcast against actual growth.
+- `output/figures/ghana_lights_and_gdp.png` and
+  `output/figures/country_gdp_estimate_real.png`: the Ghana lights image and the
+  reconstruction against actual GDP.
+
+## Repository layout
 
 ```
-ln(GDP_it) = b * ln(NTL_it) + a_i + g_t + e_it
+src/
+  config.py               settings (API keys, paths, years); not committed
+  data_acquisition.py     BEA GDP and Census population
+  ntl_counties_bm.py      Black Marble aggregation to U.S. counties
+  ntl_processing.py       nighttime-lights loading
+  panel_construction.py   builds the county and state panels
+  benchmarks.py           pooled OLS
+  panel_fe.py             two-way and heterogeneous fixed effects
+  spatial_model.py        spatial lag model
+  nowcasting.py           Ridge nowcast
+  visualizations.py       core figures
+  us_maps.py              two-panel U.S. lights and GDP figure
+  wb_data.py              World Bank GDP and Natural Earth boundaries
+  country_real.py         Ghana estimation and figures
+main.py                   runs the U.S. pipeline
+run_us_maps.py            draws the U.S. two-panel figure
+run_country_real.py       runs the Ghana analysis
 ```
 
-The county term `a_i` absorbs time-invariant characteristics. The year term `g_t` absorbs national business cycles common to every county. What remains, `b`, is the within-county association between changes in light and changes in output. It falls to about 0.23, which is the more defensible figure.
+## Running it
 
-### Spatial model
+1. Install the dependencies:
 
-State GDP is spatially dependent, since activity in one state spills into its neighbors. A generalized-moments spatial lag model accounts for this:
+   ```
+   pip install pandas numpy statsmodels scikit-learn linearmodels geopandas wbgapi blackmarblepy
+   ```
 
-```
-ln(GDP_i) = rho * W * ln(GDP_i) + b * ln(NTL_i) + e_i
-```
+2. Get a free BEA API key (https://apps.bea.gov/API/signup/) and a free NASA
+   Earthdata token (https://urs.earthdata.nasa.gov, Generate Token). On the
+   Earthdata site, also accept the LAADS product license and authorize the LAADS
+   application, which Black Marble downloads require.
 
-where `W` is a Queen contiguity weights matrix. The spatial parameter `rho` measures how much a state's output reflects its neighbors' output, independent of its own light.
+3. Copy `src/config.example.py` to `src/config.py`, put your BEA key in it, set
+   `USE_SYNTHETIC = False`, and set the `BLACKMARBLE_TOKEN` environment variable
+   to your Earthdata token.
 
-### Nowcasting
+4. Run the U.S. pipeline, then the figure and the Ghana analysis:
 
-County GDP from the BEA arrives with a long lag, while satellite light is available much sooner. The nowcasting test trains a Ridge regression on light growth and population controls through 2018, then evaluates it out of sample on 2019 through 2022, a window that includes the COVID contraction and the recovery that followed.
+   ```
+   python main.py
+   python run_us_maps.py
+   python run_country_real.py
+   ```
 
-## Results
-
-The comparison across specifications is the central result. Pooled OLS overstates the light-GDP elasticity by roughly a factor of five relative to the within-county estimate. The fixed effects coefficient near 0.23 is consistent with Henderson, Storeygard, and Weil (2012), who report elasticities of 0.28 to 0.35 from DMSP-OLS data in a cross-country panel.
-
-The nowcast reproduces the direction of the 2020 contraction and the 2021 rebound but understates the size of both. This is expected. The pandemic broke the usual link between activity and light, as commercial districts went dark while residential areas stayed lit.
-
-Urban counties are far brighter than rural ones, but their estimated elasticity is slightly lower. This points to saturation: in a dense metro, an additional unit of activity adds less incremental light than the same increase in a smaller place with a lower infrastructure base.
-
-## Key figures
-
-### Simulated satellite view vs. GDP
-
-![County map](output/figures/county_map.png)
-
-### NTL-GDP elasticity across specifications
-
-![Coefficient comparison](output/figures/coefficient_comparison.png)
-
-### Nowcast: light-based GDP prediction vs. actual
-
-![Nowcast](output/figures/nowcast_comparison.png)
-
-### NTL vs. GDP, levels and growth rates
-
-![Scatter](output/figures/ntl_gdp_scatter.png)
-
-### Urban vs. rural NTL
-
-![Urban rural](output/figures/urban_rural_ntl.png)
+The first run downloads several gigabytes of Black Marble tiles for the U.S. and
+takes a few hours. Everything caches afterward, so later runs are fast.
 
 ## Limitations
 
-The basic limitation of any light-based measure is that light tracks activity, not output. A county that shifts from manufacturing to finance can see its GDP rise while its light stays flat. The reverse happens too. Oil extraction in the Permian Basin produces intense flaring light, but much of the associated GDP accrues to firms headquartered elsewhere.
-
-The shipped results also run on synthetic light rather than the real composites, so they demonstrate the method rather than establish empirical findings. The qualitative conclusions hold up against the real-data literature, including the direction of the OLS bias, the presence of a nowcasting signal in growth rates, and the urban-rural difference. The specific coefficient values, however, should not be cited as empirical estimates. Running the pipeline on the real VIIRS rasters is the natural next step.
-
-## Replication
-
-```
-git clone https://github.com/siyuan727/nighttime-lights-gdp
-cd nighttime-lights-gdp
-pip install -r requirements.txt
-```
-
-Add a free BEA API key (apps.bea.gov) to `src/config.py`, then run:
-
-```
-python main.py
-```
-
-Figures are written to `output/figures/` and regression tables to `output/tables/`. The first run downloads shapefiles and GDP data automatically and takes a couple of minutes. Later runs read from cache and finish in under thirty seconds.
+- Nighttime lights are a biased proxy. They rise faster than output over time,
+  and the bias is worse in developing settings, as the Ghana comparison shows.
+- Fixed effects reduce but do not eliminate bias. Anything that varies within a
+  county over time and moves both lights and GDP can still bias the estimate, so
+  the within elasticity is not a clean causal parameter.
+- Lights enter as log(radiance + 0.01). The offset keeps near-zero counties in
+  the sample and raises the measured levels correlation by compressing the dark
+  tail. The reported correlations should be read with that choice in mind.
+- Census population estimates end in 2019, so 2020 to 2022 reuse 2019 population
+  as a slow-moving control.
+- A handful of counties in the mid-Atlantic do not merge cleanly because
+  Connecticut changed its county-equivalent FIPS structure in 2022.
 
 ## References
 
-Chen, X., and Nordhaus, W. (2011). Using luminosity data as a proxy for economic statistics. *PNAS*, 108(21), 8589 to 8594.
+Henderson, J. V., Storeygard, A., and Weil, D. N. (2012). Measuring economic
+growth from outer space. American Economic Review, 102(2), 994 to 1028.
 
-Elvidge, C. D., et al. (2017). VIIRS night-time lights. *International Journal of Remote Sensing*, 38(21), 5860 to 5879.
-
-Henderson, J. V., Storeygard, A., and Weil, D. N. (2012). Measuring economic growth from outer space. *American Economic Review*, 102(2), 994 to 1028.
+Roman, M. O., et al. (2018). NASA's Black Marble nighttime lights product suite.
+Remote Sensing of Environment, 210, 113 to 143.

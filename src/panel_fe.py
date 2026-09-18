@@ -32,7 +32,7 @@ def run_twoway_fe(panel):
         results[name] = res
         b  = res.params["ln_ntl"]
         se = res.std_errors["ln_ntl"]
-        log.info(f"  β(ln_ntl) = {b:.4f} (SE={se:.4f})")
+        log.info(f"  beta(ln_ntl) = {b:.4f} (SE={se:.4f})")
 
     _save(results)
     return results
@@ -67,6 +67,6 @@ def run_heterogeneous_fe(panel):
                        drop_absorbed=True).fit(
             cov_type="clustered", cluster_entity=True)
         results[label] = res
-        log.info(f"{label}: β={res.params['ln_ntl']:.4f} "
+        log.info(f"{label}: beta={res.params['ln_ntl']:.4f} "
                  f"(SE={res.std_errors['ln_ntl']:.4f})")
     return results
