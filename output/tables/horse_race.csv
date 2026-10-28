@@ -1,0 +1,3 @@
+test,baseline_R2,plus_lights_R2,delta_R2,RMSE_reduction_%,n
+levels,0.5085,0.7778,0.2693,32.76,21343
+changes,-0.0001,0.0173,0.0174,0.87,18294

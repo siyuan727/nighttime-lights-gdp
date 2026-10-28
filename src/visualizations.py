@@ -103,18 +103,20 @@ def plot_coefficient_comparison(ols_results, fe_results, hetero_results=None):
             ses.append(float(res.bse[var]))
             labels.append("OLS")
 
-    fe_map = {"fe_entity":     "County FE",
-              "fe_twoway": "Two-Way FE (main spec)",
-              "fe_twoway_pop": "Two-Way FE + Pop"}
-    for name, label in fe_map.items():
+    fe_map = {"fe_entity":     ("County FE", "ln_ntl"),
+              "fe_twoway":     ("Two-Way FE (main spec)", "ln_ntl"),
+              "fe_twoway_pop": ("Two-Way FE + Pop", "ln_ntl"),
+              "fe_twoway_lag": ("Two-Way FE (lagged NTL)", "ln_ntl_lag")}
+    for name, (label, var) in fe_map.items():
         if name not in fe_results:
             continue
         res = fe_results[name]
-        if "ln_ntl" in res.params.index:
+        if var in res.params.index:
             models.append(label)
-            coefs.append(float(res.params["ln_ntl"]))
-            ses.append(float(res.std_errors["ln_ntl"]))
+            coefs.append(float(res.params[var]))
+            ses.append(float(res.std_errors[var]))
             labels.append("Panel FE")
+
 
     if hetero_results:
         for name, res in hetero_results.items():

@@ -83,9 +83,10 @@ def run_pipeline(rebuild: bool = True):
 
     # ── Phase 5: Panel fixed effects ─────────────────────────
     log.info("=== PHASE 5: Panel Fixed Effects ===")
-    from src.panel_fe import run_twoway_fe, run_heterogeneous_fe
+    from src.panel_fe import run_twoway_fe, run_heterogeneous_fe, run_lag_fe
     fe_results = run_twoway_fe(panel)
     hetero_results = run_heterogeneous_fe(panel)
+    fe_results.update(run_lag_fe(panel))
 
     # ── Phase 6: Spatial model ───────────────────────────────
     log.info("=== PHASE 6: Spatial Model ===")
@@ -101,6 +102,12 @@ def run_pipeline(rebuild: bool = True):
     log.info("=== PHASE 7: Nowcasting ===")
     from src.nowcasting import run_nowcasting
     nowcast_results = run_nowcasting(panel)
+
+    # ── Phase 7b: Light-vs-population horse race ─────────────
+    log.info("=== PHASE 7b: Horse Race (light beyond population) ===")
+    from src.horse_race import run_horse_race, plot_horse_race
+    hr = run_horse_race(panel)
+    plot_horse_race(hr)
 
     # ── Phase 8: Visualizations ──────────────────────────────
     log.info("=== PHASE 8: Visualizations ===")
