@@ -13,6 +13,7 @@ SHAPEFILE_PATH  = DATA_RAW  / "counties" / "tl_2022_us_county.shp"
 STATE_SHP_PATH  = DATA_RAW  / "states"   / "tl_2022_us_state.shp"
 
 BEA_API_KEY = "018F8C8F-C213-48EF-9564-C959ACC6E010"
+CENSUS_API_KEY = "dad507e5a5275137d907d3a1806f0998c968c6f0"
 NTL_SOURCE = "blackmarble"
 
 START_YEAR = 2016

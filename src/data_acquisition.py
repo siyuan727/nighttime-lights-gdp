@@ -111,40 +111,51 @@ def _synthetic_gdp():
 
 
 def fetch_population():
+    from src.config import CENSUS_API_KEY
     cache = DATA_RAW / "census_population.csv"
     if cache.exists():
         return pd.read_csv(cache, dtype={"fips": str})
-    log.info("Fetching Census population...")
+    if not CENSUS_API_KEY or CENSUS_API_KEY == "paste_your_census_key_here":
+        raise RuntimeError("No Census API key. Get one free at "
+                           "https://api.census.gov/data/key_signup.html and put "
+                           "it in CENSUS_API_KEY in src/config.py.")
+    log.info("Fetching Census population (real)...")
     rows = []
     for year in YEARS:
         api_year = min(year, 2019)
         url = (f"https://api.census.gov/data/{api_year}/pep/population"
-               f"?get=POP,NAME&for=county:*&in=state:*")
+               f"?get=POP,NAME&for=county:*&in=state:*&key={CENSUS_API_KEY}")
+        r = None
         try:
             r = requests.get(url, timeout=60)
             r.raise_for_status()
-            data   = r.json()
-            header = data[0]
-            pop_i  = header.index("POP")
-            st_i   = header.index("state")
-            co_i   = header.index("county")
-            for row in data[1:]:
-                fips = str(row[st_i]).zfill(2) + str(row[co_i]).zfill(3)
-                if fips[:2] in EXCLUDE_FIPS_PREFIX:
-                    continue
-                try:
-                    rows.append({"fips": fips, "year": year,
-                                 "population": int(row[pop_i])})
-                except (ValueError, TypeError):
-                    continue
+            data = r.json()
         except Exception as e:
-            log.warning(f"Census API year {year}: {e}")
+            snippet = (r.text[:120] if r is not None else "")
+            log.warning(f"Census API year {year}: {e}; response head: {snippet!r}")
+            continue
+        header = data[0]
+        pop_i = header.index("POP")
+        st_i = header.index("state")
+        co_i = header.index("county")
+        for row in data[1:]:
+            fips = str(row[st_i]).zfill(2) + str(row[co_i]).zfill(3)
+            if fips[:2] in EXCLUDE_FIPS_PREFIX:
+                continue
+            try:
+                rows.append({"fips": fips, "year": year,
+                             "population": int(row[pop_i])})
+            except (ValueError, TypeError):
+                continue
     if not rows:
-        return _synthetic_population()
-    df = pd.DataFrame(rows).sort_values(["fips","year"]).reset_index(drop=True)
+        raise RuntimeError("Census population pull returned no rows. Check "
+                           "CENSUS_API_KEY and network. NOT falling back to "
+                           "synthetic data in real-data mode.")
+    df = pd.DataFrame(rows).sort_values(["fips", "year"]).reset_index(drop=True)
     df.to_csv(cache, index=False)
+    log.info(f"Census population: {len(df)} rows, {df['fips'].nunique()} "
+             f"counties, max {df['population'].max():,}")
     return df
-
 
 def _synthetic_population():
 

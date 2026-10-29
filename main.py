@@ -174,20 +174,11 @@ def run_pipeline(rebuild: bool = True):
     # ── Phase 14: Measurement-error IV (attenuation vs composition) ──
     log.info("=== PHASE 14: Measurement-Error IV ===")
     try:
-        from src.measurement_error import (
-            get_county_ntl_split, attach_split_measures,
-            estimate_attenuation, estimate_attenuation_lag_fallback,
-        )
-        try:
-            split = get_county_ntl_split()          # monthly Black Marble
-            panel_me = attach_split_measures(panel, split)
-            estimate_attenuation(panel_me, beta_pooled=0.845)
-        except Exception as e_split:
-            log.warning(f"Half-year measures unavailable ({e_split}); "
-                        f"using the lagged-light instrument fallback.")
-            estimate_attenuation_lag_fallback(panel)
+        from src.measurement_error import estimate_attenuation_lag_fallback
+        estimate_attenuation_lag_fallback(panel)
     except Exception as e:
         log.warning(f"Measurement-error IV skipped: {e}")
+
 
     # ── Phase 15: Developing-economies external validity (HEAVY) ──
     # Downloads national Black Marble lights for ~150 countries, so it is left
@@ -205,7 +196,7 @@ def run_pipeline(rebuild: bool = True):
     # ── Verify outputs ───────────────────────────────────────
     print("\n-- Files created --")
     for folder in (OUTPUT_FIG, OUTPUT_TAB, OUTPUT_LOG):
-        files = list(folder.glob("*"))mkk
+        files = list(folder.glob("*"))
         print(f"{folder}:")
         for f in files:
             print(f"  {f.name} ({os.path.getsize(f)} bytes)")
