@@ -138,10 +138,74 @@ def run_pipeline(rebuild: bool = True):
     except Exception as e:
         log.warning(f"US GDP estimation skipped: {e}")
 
+    # ── Phase 10: Descriptive statistics (publication table) ──
+    log.info("=== PHASE 10: Descriptive Statistics ===")
+    try:
+        from src.descriptives import build_descriptives
+        build_descriptives(panel)
+    except Exception as e:
+        log.warning(f"Descriptives skipped: {e}")
+
+    # ── Phase 11: Industry heterogeneity (BEA CAGDP2) ─────────
+    log.info("=== PHASE 11: Industry Heterogeneity ===")
+    try:
+        from src.industry import run_industry_analysis
+        run_industry_analysis(panel)
+    except Exception as e:
+        log.warning(f"Industry analysis skipped (needs BEA CAGDP2): {e}")
+
+    # ── Phase 12: Conley spatial-HAC standard errors ──────────
+    log.info("=== PHASE 12: Conley Spatial Standard Errors ===")
+    try:
+        from src.spatial_se import run_conley_levels
+        conley = run_conley_levels(panel, SHAPEFILE_PATH)
+        conley["table"].to_csv(OUTPUT_TAB / "conley_levels.csv", index=False)
+    except Exception as e:
+        log.warning(f"Conley SE skipped: {e}")
+
+    # ── Phase 13: Horse-race inference (bootstrap + Diebold-Mariano) ──
+    log.info("=== PHASE 13: Horse-Race Inference ===")
+    try:
+        from src.horse_race import run_horse_race_inference
+        run_horse_race_inference(panel)
+    except Exception as e:
+        log.warning(f"Horse-race inference skipped: {e}")
+
+    # ── Phase 14: Measurement-error IV (attenuation vs composition) ──
+    log.info("=== PHASE 14: Measurement-Error IV ===")
+    try:
+        from src.measurement_error import (
+            get_county_ntl_split, attach_split_measures,
+            estimate_attenuation, estimate_attenuation_lag_fallback,
+        )
+        try:
+            split = get_county_ntl_split()          # monthly Black Marble
+            panel_me = attach_split_measures(panel, split)
+            estimate_attenuation(panel_me, beta_pooled=0.845)
+        except Exception as e_split:
+            log.warning(f"Half-year measures unavailable ({e_split}); "
+                        f"using the lagged-light instrument fallback.")
+            estimate_attenuation_lag_fallback(panel)
+    except Exception as e:
+        log.warning(f"Measurement-error IV skipped: {e}")
+
+    # ── Phase 15: Developing-economies external validity (HEAVY) ──
+    # Downloads national Black Marble lights for ~150 countries, so it is left
+    # commented to keep a normal `python main.py` fast. Uncomment to include it,
+    # or just run `python run_country_panel.py` on its own. Requires the config
+    # additions (REFERENCE_INCOME_GROUPS etc.) pasted into src/config.py and
+    # BLACKMARBLE_TOKEN set.
+    # log.info("=== PHASE 15: Developing-Economies Panel ===")
+    # try:
+    #     from src.country_panel import run as run_country_panel
+    #     run_country_panel(save=True)
+    # except Exception as e:
+    #     log.warning(f"Developing-economies panel skipped: {e}")
+
     # ── Verify outputs ───────────────────────────────────────
     print("\n-- Files created --")
     for folder in (OUTPUT_FIG, OUTPUT_TAB, OUTPUT_LOG):
-        files = list(folder.glob("*"))
+        files = list(folder.glob("*"))mkk
         print(f"{folder}:")
         for f in files:
             print(f"  {f.name} ({os.path.getsize(f)} bytes)")

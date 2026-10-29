@@ -71,3 +71,24 @@ TARGET_ISO3 = "GHA"  # Ghana (has WDI data to validate against)
 MAP_YEAR = 2021  # year drawn on the maps
 PANEL_MAX_COUNTRIES = 8  # cap on data-rich countries (bounds NTL download)
 PANEL_INCOME_GROUPS = ["High income", "Upper middle income"]
+
+REFERENCE_INCOME_GROUPS = ["High income"]
+DEV_INCOME_GROUPS = ["Low income", "Lower middle income", "Upper middle income"]
+REFERENCE_MAX_COUNTRIES = None
+DEV_MAX_COUNTRIES = None
+
+# Structural covariates for the second-stage error regression (WDI codes).
+# agriculture_share: dim land-based output; electricity_access: lights need
+# power; rural_share: dispersed low-radiance activity; self_employment:
+# informality proxy.
+COUNTRY_COVARIATES = {
+    "agriculture_share": "NV.AGR.TOTL.ZS",   # agriculture value added, % GDP
+    "electricity_access": "EG.ELC.ACCS.ZS",  # access to electricity, % pop
+    "rural_share": "SP.RUR.TOTL.ZS",         # rural population, % total
+    "self_employment": "SL.EMP.SELF.ZS",     # self-employed, % employment
+}
+
+# ── Conley spatial-HAC and measurement-error settings ──
+CONLEY_CUTOFF_KM = 500.0   # spatial Bartlett kernel cutoff
+CONLEY_LAG_YEARS = 1       # serial-correlation bandwidth in years
+HORSE_RACE_N_BOOT = 2000   # cluster-bootstrap draws for delta-R2 CIs

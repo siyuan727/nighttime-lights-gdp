@@ -1,0 +1,3 @@
+variable,coef,conley_se,classical_se,t_conley
+ln_ntl,0.6502,0.012,0.004,54.295
+ln_pop,0.5265,0.0192,0.0065,27.377

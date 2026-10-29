@@ -1,0 +1,8 @@
+term,coef,se,pval
+ln_ntl,0.1566,0.0197,0.0
+ntlX_agriculture,-0.0343,0.011,0.0019
+ntlX_manufacturing,0.0035,0.0125,0.7776
+ntlX_trade,0.0226,0.0107,0.0344
+ntlX_finance,0.029,0.022,0.1871
+ntlX_government,-0.0085,0.0093,0.3603
+ntlX_mining,0.0142,0.0092,0.1237

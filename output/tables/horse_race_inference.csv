@@ -1,0 +1,3 @@
+test,delta_R2,delta_R2_se,ci_lo,ci_hi,DM_stat,DM_p_one_sided,n_clusters,n
+levels,0.2693,0.0105,0.25,0.2915,24.125,0.0,3049,21343
+changes,0.0174,0.0033,0.0105,0.0236,5.325,0.0,3049,18294

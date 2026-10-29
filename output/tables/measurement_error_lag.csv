@@ -1,0 +1,5 @@
+quantity,value,se
+FE within (naive),0.1333,0.0141
+IV within (lag instrument),0.3837,0.0419
+reliability ratio (FE/IV),0.3475,
+first-stage F,3115.75,
