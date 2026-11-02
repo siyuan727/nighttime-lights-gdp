@@ -22,6 +22,10 @@ year effects); the question is what happens as k grows. Note that the panel is
 only seven years, so the k = 5 and k = 6 estimates rest on one or two differences
 per county and are noisy; the informative range is roughly k = 1 to 4.
 
+Reference: Griliches, Z., & Hausman, J. A. (1986). Errors in variables in panel
+data. Journal of Econometrics, 31(1), 93-118.
+"""
+
 import logging
 
 import numpy as np
